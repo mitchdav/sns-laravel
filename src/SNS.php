@@ -5,8 +5,6 @@ namespace Mitchdav\SNS;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Aws\Sns\SnsClient;
-use Log;
-use Route;
 
 /**
  * Class SNS
@@ -18,6 +16,11 @@ class SNS
 	 * @var \Aws\Sns\SnsClient $client
 	 */
 	private $client;
+
+	/**
+	 * @var \Illuminate\Routing\Router|\Laravel\Lumen\Routing\Router $router
+	 */
+	private $router;
 
 	/**
 	 * @var string $url
@@ -47,11 +50,13 @@ class SNS
 	/**
 	 * SNS constructor.
 	 *
-	 * @param \Aws\Sns\SnsClient $client
+	 * @param \Aws\Sns\SnsClient                                       $client
+	 * @param \Illuminate\Routing\Router|\Laravel\Lumen\Routing\Router $client
 	 */
-	public function __construct(SnsClient $client)
+	public function __construct(SnsClient $client, $router)
 	{
 		$this->client = $client;
+		$this->router = $router;
 
 		$config = config('sns');
 
@@ -60,82 +65,6 @@ class SNS
 
 		$this->topics        = $this->parseTopics($config['topics']);
 		$this->subscriptions = $this->parseSubscriptions($config['subscriptions']);
-	}
-
-	/**
-	 * @param array $topics
-	 *
-	 * @return array
-	 */
-	private function parseTopics($topics)
-	{
-		$output = [];
-
-		foreach ($topics as $key => $value) {
-			if (is_int($key)) {
-				$key = $value;
-
-				$value = [];
-			}
-
-			if (!is_string($value)) {
-				$value = array_merge(
-					$this->defaults['topics'],
-					[
-						'topic' => $key,
-					],
-					$value
-				);
-
-				$value = $value['formARN']($value['region'], $value['id'], $value['prefix'], $value['joiner'], $value['topic']);
-			}
-
-			$name = $this->getNameFromARN($value);
-
-			$value = [
-				'arn'  => $value,
-				'name' => $name,
-			];
-
-			$output[$key] = $value;
-		}
-
-		return $output;
-	}
-
-	/**
-	 * @param string $arn
-	 *
-	 * @return string
-	 */
-	private function getNameFromARN($arn)
-	{
-		$parts = explode(':', $arn);
-
-		$name = end($parts);
-
-		return $name;
-	}
-
-	/**
-	 * @param array $subscriptions
-	 *
-	 * @return array
-	 */
-	private function parseSubscriptions($subscriptions)
-	{
-		$output = [];
-
-		foreach ($subscriptions as $key => $value) {
-			$value = array_merge(
-				$this->defaults['subscriptions'],
-				$value
-			);
-
-			$output[$key] = $value;
-		}
-
-		return $output;
 	}
 
 	/**
@@ -149,9 +78,10 @@ class SNS
 			throw new \InvalidArgumentException('The topic must exist in the topics configuration.');
 		}
 
-		$result = $this->getClient()->createTopic([
-			'Name' => $this->getTopic($topic)['name'],
-		]);
+		$result = $this->getClient()
+		               ->createTopic([
+			               'Name' => $this->getTopic($topic)['name'],
+		               ]);
 
 		$arn = $result->get('TopicArn');
 
@@ -201,9 +131,10 @@ class SNS
 			throw new \InvalidArgumentException('The topic must exist in the topics configuration.');
 		}
 
-		$this->getClient()->deleteTopic([
-			'TopicArn' => $this->getTopic($topic)['arn'],
-		]);
+		$this->getClient()
+		     ->deleteTopic([
+			     'TopicArn' => $this->getTopic($topic)['arn'],
+		     ]);
 
 		unset($this->topics[$topic]);
 
@@ -229,11 +160,12 @@ class SNS
 		$protocol = substr($this->url, 0, strpos($this->url, ':'));
 		$endpoint = $this->url . $this->getSubscription($topic)['route'];
 
-		$this->getClient()->subscribe([
-			'TopicArn' => $arn,
-			'Protocol' => $protocol,
-			'Endpoint' => $endpoint,
-		]);
+		$this->getClient()
+		     ->subscribe([
+			     'TopicArn' => $arn,
+			     'Protocol' => $protocol,
+			     'Endpoint' => $endpoint,
+		     ]);
 
 		return $this;
 	}
@@ -290,7 +222,8 @@ class SNS
 				$args['NextToken'] = $nextToken;
 			}
 
-			$result = $this->getClient()->listSubscriptionsByTopic($args);
+			$result = $this->getClient()
+			               ->listSubscriptionsByTopic($args);
 
 			$nextToken = $result->get('NextToken');
 
@@ -300,10 +233,11 @@ class SNS
 				if ($subscription['Protocol'] == $protocol && $subscription['Endpoint'] == $endpoint) {
 					$subscriptionArn = $subscription['SubscriptionArn'];
 
-					$this->getClient()->unsubscribe([
-						'TopicArn'        => $arn,
-						'SubscriptionArn' => $subscriptionArn,
-					]);
+					$this->getClient()
+					     ->unsubscribe([
+						     'TopicArn'        => $arn,
+						     'SubscriptionArn' => $subscriptionArn,
+					     ]);
 				}
 			}
 		} while ($nextToken != NULL);
@@ -330,16 +264,19 @@ class SNS
 		}
 
 		foreach ($this->routes as $route => $topics) {
-			Route::post($route, function () use ($topics) {
+			// Rebinding $this to $self avoids exceptions in Lumen about undefined methods used to fire actions
+			// Symfony\Component\Debug\Exception\FatalThrowableError: Call to undefined method Laravel\Lumen\Routing\Closure::callController()
+			// Symfony\Component\Debug\Exception\FatalThrowableError: Call to undefined method Laravel\Lumen\Routing\Closure::callJob()
+			// Symfony\Component\Debug\Exception\FatalThrowableError: Call to undefined method Laravel\Lumen\Routing\Closure::callCallback()
+
+			$self = $this;
+
+			$this->router->post($route, function () use ($topics, $self) {
 				$message   = Message::fromRawPostData();
 				$validator = new MessageValidator();
 
 				// Validate the message and log errors if invalid.
-				try {
-					$validator->validate($message);
-				} catch (\Exception $e) {
-					throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
-				}
+				$validator->validate($message);
 
 				$arn   = $message['TopicArn'];
 				$found = FALSE;
@@ -361,30 +298,30 @@ class SNS
 								if (array_key_exists('controller', $subscription)) {
 									if (is_array($subscription['controller'])) {
 										foreach ($subscription['controller'] as $controller) {
-											$this->callController($controller, $message);
+											$self->callController($controller, $message);
 										}
 									} else {
-										$this->callController($subscription['controller'], $message);
+										$self->callController($subscription['controller'], $message);
 									}
 								}
 
 								if (array_key_exists('job', $subscription)) {
 									if (is_array($subscription['job'])) {
 										foreach ($subscription['job'] as $job) {
-											$this->callJob($job, $message);
+											$self->callJob($job, $message);
 										}
 									} else {
-										$this->callJob($subscription['job'], $message);
+										$self->callJob($subscription['job'], $message);
 									}
 								}
 
 								if (array_key_exists('callback', $subscription)) {
 									if (is_array($subscription['callback'])) {
 										foreach ($subscription['callback'] as $callback) {
-											$this->callCallback($callback, $message);
+											$self->callCallback($callback, $message);
 										}
 									} else {
-										$this->callCallback($subscription['callback'], $message);
+										$self->callCallback($subscription['callback'], $message);
 									}
 								}
 
@@ -403,6 +340,75 @@ class SNS
 		}
 
 		return $this;
+	}
+
+	/**
+	 * @param array $topics
+	 *
+	 * @return array
+	 */
+	private function parseTopics($topics)
+	{
+		$output = [];
+
+		foreach ($topics as $key => $value) {
+			if (is_int($key)) {
+				$key = $value;
+
+				$value = [];
+			}
+
+			if (!is_string($value)) {
+				$value = array_merge($this->defaults['topics'], [
+					'topic' => $key,
+				], $value);
+
+				$value = $value['formARN']($value['region'], $value['id'], $value['prefix'], $value['joiner'], $value['topic']);
+			}
+
+			$name = $this->getNameFromARN($value);
+
+			$value = [
+				'arn'  => $value,
+				'name' => $name,
+			];
+
+			$output[$key] = $value;
+		}
+
+		return $output;
+	}
+
+	/**
+	 * @param string $arn
+	 *
+	 * @return string
+	 */
+	private function getNameFromARN($arn)
+	{
+		$parts = explode(':', $arn);
+
+		$name = end($parts);
+
+		return $name;
+	}
+
+	/**
+	 * @param array $subscriptions
+	 *
+	 * @return array
+	 */
+	private function parseSubscriptions($subscriptions)
+	{
+		$output = [];
+
+		foreach ($subscriptions as $key => $value) {
+			$value = array_merge($this->defaults['subscriptions'], $value);
+
+			$output[$key] = $value;
+		}
+
+		return $output;
 	}
 
 	/**

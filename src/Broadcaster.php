@@ -52,10 +52,11 @@ class Broadcaster implements BaseBroadcaster
 			if (is_string($channel)) {
 				$topic = $this->sns->getTopic($channel);
 
-				$this->sns->getClient()->publish([
-					'Message'  => $payload,
-					'TopicArn' => $topic['arn'],
-				]);
+				$this->sns->getClient()
+				          ->publish([
+					          'Message'  => $payload,
+					          'TopicArn' => $topic['arn'],
+				          ]);
 			}
 		}
 	}

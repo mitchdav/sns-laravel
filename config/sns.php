@@ -2,7 +2,7 @@
 
 use Aws\Sns\Message;
 
-// use Log;
+// use Illuminate\Support\Facades\Log;
 
 return [
 	// The credentials needed for the AWS client
