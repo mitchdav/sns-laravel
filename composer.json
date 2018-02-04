@@ -1,6 +1,6 @@
 {
   "name": "mitchdav/sns-laravel",
-  "description": "A Laravel library to enable sending and receiving broadcasts to and from SNS topics.",
+  "description": "A library to enable sending and receiving broadcasts to and from SNS topics in Laravel and Lumen.",
   "keywords": [
     "laravel",
     "broadcast",
