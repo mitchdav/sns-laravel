@@ -3,6 +3,7 @@
   "description": "A library to enable sending and receiving broadcasts to and from SNS topics in Laravel and Lumen.",
   "keywords": [
     "laravel",
+    "lumen",
     "broadcast",
     "broadcasts",
     "broadcaster",
