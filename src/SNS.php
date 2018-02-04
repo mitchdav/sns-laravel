@@ -334,7 +334,7 @@ class SNS
 				}
 
 				if (!$found) {
-					throw new \Symfony\Component\HttpKernel\Exception\NotFoundHttpException();
+					throw new \Symfony\Component\HttpKernel\Exception\BadRequestHttpException();
 				}
 			});
 		}

@@ -23,11 +23,11 @@ class Provider extends ServiceProvider
 
 	public function boot()
 	{
-		$this->bootWithRouter(Router::class);
+		$this->bootWithRouter($this->app[Router::class]);
 	}
 
 	/**
-	 * @param string $router
+	 * @param object $router
 	 *
 	 * @return $this
 	 */
@@ -38,10 +38,10 @@ class Provider extends ServiceProvider
 		});
 
 		$this->app->singleton(SNS::class, function ($app, $config) use ($router) {
-			return new SNS($app[SnsClient::class], $app[$router]);
+			return new SNS($app[SnsClient::class], $router);
 		});
 
-		$this->app[\Illuminate\Broadcasting\BroadcastManager::class]->extend('sns', function ($app, $config) {
+		$this->app[\Illuminate\Contracts\Broadcasting\Factory::class]->extend('sns', function ($app, $config) {
 			return new Broadcaster($app[SNS::class]);
 		});
 
