@@ -12,10 +12,10 @@ class LumenProvider extends Provider
 {
 	public function boot()
 	{
-		$this->app->bind(\Illuminate\Broadcasting\BroadcastManager::class, function ($app, $config) {
+		$this->app->singleton(\Illuminate\Broadcasting\BroadcastManager::class, function ($app, $config) {
 			return new \Illuminate\Broadcasting\BroadcastManager($app);
 		});
 
-		$this->bootWithRouter(Router::class);
+		$this->bootWithRouter($this->app[Router::class]);
 	}
 }
