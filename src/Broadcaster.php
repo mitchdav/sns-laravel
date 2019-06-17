@@ -70,7 +70,7 @@ class Broadcaster implements BaseBroadcaster
 	 */
 	public function auth($request)
 	{
-		// SNS is for server-to-server communication, so there is no need to validate authenticate.
+		// SNS is for server-to-server communication, so there is no need to authenticate the request.
 	}
 
 	/**
@@ -83,6 +83,6 @@ class Broadcaster implements BaseBroadcaster
 	 */
 	public function validAuthenticationResponse($request, $result)
 	{
-		// SNS is for server-to-server communication, so there is no need to validate authenticate.
+		// SNS is for server-to-server communication, so there is no need to authenticate the request.
 	}
 }

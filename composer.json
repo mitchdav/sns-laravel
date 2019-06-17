@@ -3,7 +3,6 @@
   "description": "A library to enable sending and receiving broadcasts to and from SNS topics in Laravel and Lumen.",
   "keywords": [
     "laravel",
-    "lumen",
     "broadcast",
     "broadcasts",
     "broadcaster",
@@ -12,6 +11,7 @@
     "notification",
     "notifications",
     "sns",
+    "sqs",
     "aws"
   ],
   "type": "library",
@@ -20,6 +20,10 @@
     {
       "name": "Mitchell Davis",
       "email": "mitch@wingmanwebdesign.com.au"
+    },
+    {
+      "name": "Andrew Faulds",
+      "email": "andrew@wingmanwebdesign.com.au"
     }
   ],
   "scripts": {
@@ -32,14 +36,14 @@
   },
   "require": {
     "aws/aws-php-sns-message-validator": "^1.2",
-    "aws/aws-sdk-php": "~3.0",
-    "illuminate/broadcasting": "5.6.*",
-    "illuminate/console": "5.6.*",
-    "illuminate/notifications": "5.6.*",
-    "illuminate/routing": "5.6.*",
-    "illuminate/support": "5.6.*"
+    "aws/aws-sdk-php-laravel": "~3.0",
+    "illuminate/broadcasting": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
+    "illuminate/console": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
+    "illuminate/notifications": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
+    "illuminate/routing": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
+    "illuminate/support": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5.7"
+    "phpunit/phpunit": "^5.7|6.2|^7.0"
   }
 }
