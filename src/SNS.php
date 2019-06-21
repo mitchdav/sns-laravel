@@ -12,9 +12,9 @@ class SNS
 	 */
 	private $config;
 
-	public function __construct()
+	public function __construct($configFileName = 'sns')
 	{
-		$this->config = ConfigParser::parse(config('sns'));
+		$this->config = ConfigParser::parse(config($configFileName));
 	}
 
 	/**
