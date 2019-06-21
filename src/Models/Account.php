@@ -11,7 +11,7 @@ class Account
 	/**
 	 * @var string
 	 */
-	private $label;
+	public $label;
 
 	/**
 	 * @var int
@@ -90,5 +90,29 @@ class Account
 		}
 
 		return $this->sdk;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLabel()
+	{
+		return $this->label;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getId()
+	{
+		return $this->id;
+	}
+
+	/**
+	 * @return NULL|string
+	 */
+	public function getRole()
+	{
+		return $this->role;
 	}
 }

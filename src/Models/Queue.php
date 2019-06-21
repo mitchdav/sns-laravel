@@ -6,10 +6,11 @@ use Aws\Sqs\Exception\SqsException;
 
 class Queue
 {
+
 	/**
 	 * @var string
 	 */
-	private $label;
+	public $label;
 
 	/**
 	 * @var string
@@ -48,19 +49,18 @@ class Queue
 	 * @param string                       $name
 	 * @param \Mitchdav\SNS\Models\Account $account
 	 * @param string                       $region
-	 * @param string                       $arn
-	 * @param string                       $url
 	 * @param array                        $attributes
 	 */
-	public function __construct($label, $name, Account $account, $region, $arn, $url, $attributes)
+	public function __construct($label, $name, Account $account, $region, $attributes)
 	{
 		$this->label      = $label;
 		$this->name       = $name;
 		$this->account    = $account;
 		$this->region     = $region;
-		$this->arn        = $arn;
-		$this->url        = $url;
 		$this->attributes = $attributes;
+
+		$this->arn = $this->generateArn();
+		$this->url = $this->generateUrl();
 	}
 
 	public function create()
@@ -106,6 +106,62 @@ class Queue
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getLabel()
+	{
+		return $this->label;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * @return \Mitchdav\SNS\Models\Account
+	 */
+	public function getAccount()
+	{
+		return $this->account;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRegion()
+	{
+		return $this->region;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getArn()
+	{
+		return $this->arn;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		return $this->url;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAttributes()
+	{
+		return $this->attributes;
+	}
+
+	/**
 	 * @return \Aws\Sqs\SqsClient
 	 */
 	private function sqsClient()
@@ -114,5 +170,21 @@ class Queue
 		                     ->createSqs([
 			                     'region' => $this->region,
 		                     ]);
+	}
+
+	private function generateArn()
+	{
+		return join(':', [
+			'arn',
+			'sqs',
+			$this->region,
+			$this->account->getId(),
+			$this->name,
+		]);
+	}
+
+	private function generateUrl()
+	{
+		return 'https://sqs.' . $this->region . '.amazonaws.com/' . $this->account->getId() . '/' . $this->name;
 	}
 }

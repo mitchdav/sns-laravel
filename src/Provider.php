@@ -9,6 +9,7 @@ use Mitchdav\SNS\Commands\Create;
 use Mitchdav\SNS\Commands\Delete;
 use Mitchdav\SNS\Commands\Subscribe;
 use Mitchdav\SNS\Commands\Unsubscribe;
+use Mitchdav\SNS\Contracts\NameFormer;
 
 /**
  * Class Provider
@@ -23,6 +24,10 @@ class Provider extends ServiceProvider
 
 	public function boot()
 	{
+		$this->app->bind(NameFormer::class, function () {
+			return new SimpleNameFormer();
+		});
+
 		$this->bootWithRouter($this->app[Router::class]);
 	}
 
@@ -33,18 +38,6 @@ class Provider extends ServiceProvider
 	 */
 	protected function bootWithRouter($router)
 	{
-		$this->app->singleton(SnsClient::class, function ($app, $config) {
-			return new SnsClient(config('sns.client'));
-		});
-
-		$this->app->singleton(SNS::class, function ($app, $config) use ($router) {
-			return new SNS($app[SnsClient::class], $router);
-		});
-
-		$this->app[\Illuminate\Contracts\Broadcasting\Factory::class]->extend('sns', function ($app, $config) {
-			return new Broadcaster($app[SNS::class]);
-		});
-
 		$this->publishes([
 			__DIR__ . '/../config/sns.php' => $this->getConfigPath('sns.php'),
 		], 'config');
@@ -57,8 +50,6 @@ class Provider extends ServiceProvider
 				Unsubscribe::class,
 			]);
 		}
-
-		$this->app[SNS::class]->registerRoutes();
 
 		return $this;
 	}

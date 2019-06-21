@@ -36,15 +36,15 @@ class Topic
 	 * @param string                       $name
 	 * @param \Mitchdav\SNS\Models\Account $account
 	 * @param string                       $region
-	 * @param string                       $arn
 	 */
-	public function __construct($label, $name, Account $account, $region, $arn)
+	public function __construct($label, $name, Account $account, $region)
 	{
 		$this->label   = $label;
 		$this->name    = $name;
 		$this->account = $account;
 		$this->region  = $region;
-		$this->arn     = $arn;
+
+		$this->arn = $this->generateArn();
 	}
 
 	public function create()
@@ -73,6 +73,57 @@ class Topic
 			     'TopicArn' => $this->arn,
 			     'Message'  => $message,
 		     ]);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLabel()
+	{
+		return $this->label;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getName()
+	{
+		return $this->name;
+	}
+
+	/**
+	 * @return \Mitchdav\SNS\Models\Account
+	 */
+	public function getAccount()
+	{
+		return $this->account;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRegion()
+	{
+		return $this->region;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getArn()
+	{
+		return $this->arn;
+	}
+
+	private function generateArn()
+	{
+		return join(':', [
+			'arn',
+			'sns',
+			$this->region,
+			$this->account->getId(),
+			$this->name,
+		]);
 	}
 
 	/**
