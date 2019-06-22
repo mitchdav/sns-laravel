@@ -9,7 +9,7 @@ class Service
 	/**
 	 * @var string
 	 */
-	public $label;
+	private $label;
 
 	/**
 	 * @var Collection $topics
@@ -59,5 +59,13 @@ class Service
 		$this->subscriptions = $subscriptions;
 
 		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLabel()
+	{
+		return $this->label;
 	}
 }

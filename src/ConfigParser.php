@@ -93,7 +93,11 @@ class ConfigParser
 
 		foreach ($services as $label => $attributes) {
 			/** @var Service $service */
-			$service = $collection->firstWhere('label', $label);
+			$service = $collection->first(function($service)  use ($label) {
+				/** @var Service $service */
+
+				return $service->getLabel() === $label;
+			});
 
 			$subscriptions = self::parseSubscriptions($label, Arr::get($attributes, 'subscriptions', []));
 
@@ -132,7 +136,11 @@ class ConfigParser
 			$region      = $mergedAttributes['region'];
 
 			/** @var Account $account */
-			$account = self::$accounts->firstWhere('label', $accountName);
+			$account = $collection->first(function($account)  use ($accountName) {
+				/** @var Account $account */
+
+				return $account->getLabel() === $accountName;
+			});
 
 			if (!isset($account)) {
 				throw new \Exception('The account "' . $accountName . '" was not found for the "' . $label . '" topic.');
@@ -174,7 +182,11 @@ class ConfigParser
 			$queueAttributes = Arr::get($mergedAttributes, 'attributes', []);
 
 			/** @var Account $account */
-			$account = self::$accounts->firstWhere('label', $accountName);
+			$account = $collection->first(function($account)  use ($accountName) {
+				/** @var Account $account */
+
+				return $account->getLabel() === $accountName;
+			});
 
 			if (!isset($account)) {
 				throw new \Exception('The account "' . $accountName . '" was not found for the "' . $label . '" queue.');

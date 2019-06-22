@@ -57,7 +57,7 @@ class SQS implements SubscriptionMethod
 		if (empty($policy)) {
 			$policy = [
 				'Version'   => '2012-10-17',
-				'Id'        => Str::uuid(),
+				'Id'        => app()->version() >= '5.7' ? (Str::uuid()) : (Str::random()),
 				'Statement' => [
 					$statementWithId,
 				],

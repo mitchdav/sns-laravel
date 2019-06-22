@@ -66,7 +66,11 @@ class Config
 	 */
 	public function getService($service)
 	{
-		return $this->services->firstWhere('label', $service);
+		$service = $this->services->first(function ($candidate) use ($service) {
+			/** @var Service $candidate */
+
+			return $candidate->getLabel() === $service;
+		});
 	}
 
 	/**
