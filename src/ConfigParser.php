@@ -17,12 +17,16 @@ class ConfigParser
 	const ARN_FORMER_DEFAULT      = '$DEFAULT$';
 	const ARN_PREFIX_SERVICE_NAME = '$SERVICE_NAME$';
 
+	/** @var array */
 	private static $defaults;
 
+	/** @var \Illuminate\Support\Collection */
 	private static $accounts;
 
+	/** @var \Illuminate\Support\Collection */
 	private static $services;
 
+	/** @var array */
 	private static $serviceMapping;
 
 	public static function parse($config)
@@ -136,7 +140,7 @@ class ConfigParser
 			$region      = $mergedAttributes['region'];
 
 			/** @var Account $account */
-			$account = $collection->first(function($account)  use ($accountName) {
+			$account = self::$accounts->first(function($account)  use ($accountName) {
 				/** @var Account $account */
 
 				return $account->getLabel() === $accountName;
@@ -182,7 +186,7 @@ class ConfigParser
 			$queueAttributes = Arr::get($mergedAttributes, 'attributes', []);
 
 			/** @var Account $account */
-			$account = $collection->first(function($account)  use ($accountName) {
+			$account = self::$accounts->first(function($account)  use ($accountName) {
 				/** @var Account $account */
 
 				return $account->getLabel() === $accountName;

@@ -66,7 +66,7 @@ class Config
 	 */
 	public function getService($service)
 	{
-		$service = $this->services->first(function ($candidate) use ($service) {
+		return $this->services->first(function ($candidate) use ($service) {
 			/** @var Service $candidate */
 
 			return $candidate->getLabel() === $service;
