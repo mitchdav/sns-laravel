@@ -37,7 +37,7 @@
 		<env name="ACCOUNT_2_ROLE" value="arn:aws:iam::0987654321:role/my-test-role"/>
 		<env name="ACCOUNT_2_REGION" value="us-west-1"/>
 
-		<env name="AWS_ACCESS_KEY" value=""/>
+		<env name="AWS_ACCESS_KEY_ID" value=""/>
 		<env name="AWS_SECRET_ACCESS_KEY" value=""/>
 	</php>
 </phpunit>

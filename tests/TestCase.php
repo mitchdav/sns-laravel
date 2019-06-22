@@ -26,7 +26,7 @@ abstract class TestCase extends BaseTestCase
 		]);
 
 		$app['config']->set('aws.credentials', [
-			'key'    => env('AWS_ACCESS_KEY'),
+			'key'    => env('AWS_ACCESS_KEY_ID'),
 			'secret' => env('AWS_SECRET_ACCESS_KEY'),
 		]);
 
