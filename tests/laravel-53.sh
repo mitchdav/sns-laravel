@@ -9,6 +9,7 @@ composer require "illuminate/config:5.3.*" --no-update
 composer require "illuminate/console:5.3.*" --no-update
 composer require "illuminate/routing:5.3.*" --no-update
 composer require "illuminate/support:5.3.*" --no-update
+composer require "phpunit/php-timer:^1" --no-update --dev
 composer require "phpunit/phpunit:5.0.*" --no-update --dev
 composer require "orchestra/testbench:3.3.*" --no-update --dev
 composer update --prefer-source --no-interaction

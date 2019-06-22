@@ -56,7 +56,7 @@ class Account
 
 		$assumeRoleResponse = $stsClient->assumeRole([
 			'RoleArn'         => $role,
-			'RoleSessionName' => 'AssumeSNSRole' . (new \DateTime())->getTimestamp(),
+			'RoleSessionName' => 'AssumeSNSRole' . time(),
 		]);
 
 		$credentials = $assumeRoleResponse->get('Credentials');
@@ -65,7 +65,7 @@ class Account
 			'key'        => $credentials['AccessKeyId'],
 			'secret'     => $credentials['SecretAccessKey'],
 			'token'      => $credentials['SessionToken'],
-			'expiration' => Carbon::make($credentials['Expiration']),
+			'expiration' => $credentials['Expiration'],
 		];
 	}
 
