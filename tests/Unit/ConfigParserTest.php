@@ -13,7 +13,7 @@ class ConfigParserTest extends TestCase
 	{
 		$sns = new SNS('snsTest');
 
-		$account = $sns->getConfig()->getAccounts()->firstWhere('label','=','account-1');
+		$account = $sns->config()->getAccounts()->firstWhere('label','=','account-1');
 		$this->assertEquals('7777777777', $account->getId());
 	}
 }

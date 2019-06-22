@@ -29,15 +29,5 @@
 		<server name="MAIL_DRIVER" value="array"/>
 		<server name="QUEUE_CONNECTION" value="sync"/>
 		<server name="SESSION_DRIVER" value="array"/>
-
-		<server name="ACCOUNT_1_ID" value="1234567890"/>
-		<server name="ACCOUNT_1_ROLE" value="null"/>
-		<server name="ACCOUNT_1_REGION" value="ap-southeast-2"/>
-		<server name="ACCOUNT_2_ID" value="0987654321"/>
-		<server name="ACCOUNT_2_ROLE" value="arn:aws:iam::0987654321:role/my-test-role"/>
-		<server name="ACCOUNT_2_REGION" value="us-west-1"/>
-
-		<server name="AWS_ACCESS_KEY" value=""/>
-		<server name="AWS_SECRET_ACCESS_KEY" value=""/>
 	</php>
 </phpunit>

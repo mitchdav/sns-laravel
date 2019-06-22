@@ -79,9 +79,14 @@ class Account
 			$defaultSdk = App::make('aws');
 
 			if ($this->role !== NULL) {
-				$config = array_merge(config('aws'), [
+				$config = array_replace_recursive(config('aws'), [
 					'credentials' => static::getCredentialsForRole($defaultSdk, $this->role),
 				]);
+
+				// Profile takes precedence over credentials, so we unset it here
+				if (isset($config['profile'])) {
+					unset($config['profile']);
+				}
 
 				$this->sdk = new Sdk($config);
 			} else {

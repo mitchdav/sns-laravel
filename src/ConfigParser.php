@@ -17,37 +17,42 @@ class ConfigParser
 	const ARN_FORMER_DEFAULT      = '$DEFAULT$';
 	const ARN_PREFIX_SERVICE_NAME = '$SERVICE_NAME$';
 
+	private static $defaults;
+
+	private static $accounts;
+
+	private static $services;
+
+	private static $serviceMapping;
+
 	public static function parse($config)
 	{
-		$defaults = Arr::get($config, 'defaults', []);
+		self::$defaults = Arr::get($config, 'defaults', []);
+		self::parseAccounts(Arr::get($config, 'accounts', []));
+		self::parseServices(Arr::get($config, 'services', []));
 
-		$accounts = self::parseAccounts(Arr::get($config, 'accounts', []));
-		$services = self::parseServices(Arr::get($config, 'services', []), $accounts, $defaults);
-
-		return new Config($accounts, $services);
+		return new Config(self::$accounts, self::$services, collect(self::$serviceMapping));
 	}
 
 	private static function parseAccounts($config)
 	{
-		$accounts = collect();
+		self::$accounts = collect();
 
 		foreach ($config as $label => $attributes) {
-			$accounts->push(new Account($label, $attributes['id'], $attributes['role']));
+			self::$accounts->push(new Account($label, $attributes['id'], $attributes['role']));
 		}
-
-		return $accounts;
 	}
 
-	private static function parseServices($services, $accounts, $defaults)
+	private static function parseServices($services)
 	{
 		$collection = collect();
 
 		$serviceMapping = [];
 
 		foreach ($services as $label => $attributes) {
-			$topics    = self::parseTopics($label, $accounts, Arr::get($attributes, 'topics', []), $defaults);
-			$queues    = self::parseQueues($label, $accounts, Arr::get($attributes, 'queues', []), $defaults);
-			$endpoints = self::parseEndpoints(Arr::get($attributes, 'endpoints', []), $defaults);
+			$topics    = self::parseTopics($label, Arr::get($attributes, 'topics', []));
+			$queues    = self::parseQueues($label, Arr::get($attributes, 'queues', []));
+			$endpoints = self::parseEndpoints(Arr::get($attributes, 'endpoints', []));
 
 			$collection->push(new Service($label, $topics, $queues, $endpoints));
 
@@ -84,36 +89,30 @@ class ConfigParser
 			];
 		}
 
-		$serviceMapping = Arr::dot($serviceMapping);
+		self::$serviceMapping = Arr::dot($serviceMapping);
 
 		foreach ($services as $label => $attributes) {
 			/** @var Service $service */
 			$service = $collection->firstWhere('label', $label);
 
-			$subscriptions = self::parseSubscriptions($label, Arr::get($attributes, 'subscriptions', []),
-				$serviceMapping);
+			$subscriptions = self::parseSubscriptions($label, Arr::get($attributes, 'subscriptions', []));
 
 			$service->setSubscriptions($subscriptions);
 		}
-
-		return $collection;
 	}
-
 
 	/**
 	 * @param string                         $service
-	 * @param \Illuminate\Support\Collection $accounts
 	 * @param array                          $topics
-	 * @param array                          $defaults
 	 *
 	 * @return \Illuminate\Support\Collection
 	 * @throws \Exception
 	 */
-	private static function parseTopics($service, $accounts, $topics, $defaults)
+	private static function parseTopics($service, $topics)
 	{
 		$collection = collect();
 
-		$defaults = array_replace_recursive(Arr::get($defaults, 'all', []), Arr::get($defaults, 'topic', []));
+		$defaults = array_replace_recursive(Arr::get(self::$defaults, 'all', []), Arr::get(self::$defaults, 'topic', []));
 
 		foreach ($topics as $label => $attributes) {
 			if (is_string($attributes)) {
@@ -133,7 +132,7 @@ class ConfigParser
 			$region      = $mergedAttributes['region'];
 
 			/** @var Account $account */
-			$account = $accounts->firstWhere('label', $accountName);
+			$account = self::$accounts->firstWhere('label', $accountName);
 
 			if (!isset($account)) {
 				throw new \Exception('The account "' . $accountName . '" was not found for the "' . $label . '" topic.');
@@ -150,11 +149,11 @@ class ConfigParser
 		return $collection;
 	}
 
-	private static function parseQueues($service, $accounts, $queues, $defaults)
+	private static function parseQueues($service, $queues)
 	{
 		$collection = collect();
 
-		$defaults = array_replace_recursive(Arr::get($defaults, 'all', []), Arr::get($defaults, 'queue', []));
+		$defaults = array_replace_recursive(Arr::get(self::$defaults, 'all', []), Arr::get(self::$defaults, 'queue', []));
 
 		foreach ($queues as $label => $attributes) {
 			if (is_string($attributes)) {
@@ -175,7 +174,7 @@ class ConfigParser
 			$queueAttributes = Arr::get($mergedAttributes, 'attributes', []);
 
 			/** @var Account $account */
-			$account = $accounts->firstWhere('label', $accountName);
+			$account = self::$accounts->firstWhere('label', $accountName);
 
 			if (!isset($account)) {
 				throw new \Exception('The account "' . $accountName . '" was not found for the "' . $label . '" queue.');
@@ -192,26 +191,26 @@ class ConfigParser
 		return $collection;
 	}
 
-	private static function parseEndpoints($config, $defaults)
+	private static function parseEndpoints($endpoints)
 	{
-		$endpoints = collect();
+		$collection = collect();
 
-		foreach ($config as $label => $attributes) {
+		foreach ($endpoints as $label => $attributes) {
 
 
 			//			$endpoints->push(new Endpoint());
 		}
 
-		return $endpoints;
+		return $collection;
 	}
 
-	private static function parseSubscriptions($subscribingService, $subscriptions, $serviceMapping)
+	private static function parseSubscriptions($subscribingService, $subscriptions)
 	{
 		$collection = collect();
 
 		foreach ($subscriptions as $publishingService => $topicLabels) {
 			foreach ($topicLabels as $topicLabel => $subscriptionAttributes) {
-				$topic = Arr::get($serviceMapping, join('.', [
+				$topic = Arr::get(self::$serviceMapping, join('.', [
 					$publishingService,
 					'topics',
 					$topicLabel,
@@ -232,9 +231,9 @@ class ConfigParser
 				foreach ($protocols as $protocol => $resources) {
 					foreach ($resources as $resource) {
 						switch ($protocol) {
-							case SQS::METHOD:
+							case SQS::PROTOCOL:
 								{
-									$queue = Arr::get($serviceMapping, join('.', [
+									$queue = Arr::get(self::$serviceMapping, join('.', [
 										$subscribingService,
 										'queues',
 										$resource,

@@ -1,6 +1,6 @@
 {
   "name": "mitchdav/sns-laravel",
-  "description": "A library to enable sending and receiving broadcasts to and from SNS topics in Laravel and Lumen.",
+  "description": "A library to enable sending and receiving broadcasts to and from SNS topics in Laravel.",
   "keywords": [
     "laravel",
     "broadcast",
@@ -12,6 +12,8 @@
     "notifications",
     "sns",
     "sqs",
+    "http",
+    "https",
     "aws"
   ],
   "type": "library",
@@ -37,16 +39,18 @@
     }
   },
   "require": {
+    "ext-json": "*",
     "aws/aws-php-sns-message-validator": "^1.2",
     "aws/aws-sdk-php-laravel": "~3.0",
     "illuminate/broadcasting": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
+    "illuminate/config": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
     "illuminate/console": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
     "illuminate/notifications": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
     "illuminate/routing": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0",
     "illuminate/support": "~5.3.0|~5.4.0|~5.5.0|~5.6.0|~5.7.0|~5.8.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5.7|6.2|^7.0",
-    "orchestra/testbench": "^3.7"
+    "orchestra/testbench": "~3.3.0|~3.4.0|~3.5.0|~3.6.0|~3.7.0|~3.8.0",
+    "phpunit/phpunit": "^5.0|^5.7|^6.0|^7.0|^8.0"
   }
 }

@@ -115,25 +115,26 @@ class Topic
 		return $this->arn;
 	}
 
-	private function generateArn()
-	{
-		return join(':', [
-			'arn',
-			'sns',
-			$this->region,
-			$this->account->getId(),
-			$this->name,
-		]);
-	}
-
 	/**
 	 * @return \Aws\Sns\SnsClient
 	 */
-	private function snsClient()
+	public function snsClient()
 	{
 		return $this->account->sdk()
 		                     ->createSns([
 			                     'region' => $this->region,
 		                     ]);
+	}
+
+	private function generateArn()
+	{
+		return join(':', [
+			'arn',
+			'aws',
+			'sns',
+			$this->region,
+			$this->account->getId(),
+			$this->name,
+		]);
 	}
 }

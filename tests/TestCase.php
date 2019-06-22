@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Aws\Laravel\AwsServiceProvider;
 use Mitchdav\SNS\Provider;
 use Mitchdav\SNS\SimpleNameFormer;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -12,12 +13,22 @@ abstract class TestCase extends BaseTestCase
 	{
 		return [
 			Provider::class,
+			AwsServiceProvider::class,
 		];
 	}
 
 	protected function getEnvironmentSetUp($app)
 	{
 		parent::getEnvironmentSetUp($app);
+
+		$app['config']->set('broadcasting.connections.sns', [
+			'driver' => 'sns',
+		]);
+
+		$app['config']->set('aws.credentials', [
+			'key'    => env('AWS_ACCESS_KEY'),
+			'secret' => env('AWS_SECRET_ACCESS_KEY'),
+		]);
 
 		$app['config']->set('sns', [
 			'accounts' => [

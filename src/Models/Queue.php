@@ -3,10 +3,10 @@
 namespace Mitchdav\SNS\Models;
 
 use Aws\Sqs\Exception\SqsException;
+use Mitchdav\SNS\SNS;
 
 class Queue
 {
-
 	/**
 	 * @var string
 	 */
@@ -105,6 +105,28 @@ class Queue
 		     ]);
 	}
 
+	public function subscribe(Topic $topic)
+	{
+		/** @var SNS $sns */
+		$sns = app(SNS::class);
+
+		/** @var \Mitchdav\SNS\Contracts\SubscriptionMethod $subscriptionMethod */
+		$subscriptionMethod = $sns->driver('sqs');
+
+		$subscriptionMethod->subscribe($topic, $this);
+	}
+
+	public function unsubscribe(Topic $topic)
+	{
+		/** @var SNS $sns */
+		$sns = app(SNS::class);
+
+		/** @var \Mitchdav\SNS\Contracts\SubscriptionMethod $subscriptionMethod */
+		$subscriptionMethod = $sns->driver('sqs');
+
+		$subscriptionMethod->unsubscribe($topic, $this);
+	}
+
 	/**
 	 * @return string
 	 */
@@ -164,7 +186,7 @@ class Queue
 	/**
 	 * @return \Aws\Sqs\SqsClient
 	 */
-	private function sqsClient()
+	public function sqsClient()
 	{
 		return $this->account->sdk()
 		                     ->createSqs([
@@ -176,6 +198,7 @@ class Queue
 	{
 		return join(':', [
 			'arn',
+			'aws',
 			'sqs',
 			$this->region,
 			$this->account->getId(),

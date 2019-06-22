@@ -3,6 +3,8 @@
 namespace Mitchdav\SNS;
 
 use Aws\Sns\SnsClient;
+use Illuminate\Broadcasting\BroadcastManager;
+use Illuminate\Contracts\Broadcasting\Factory;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Mitchdav\SNS\Commands\Create;
@@ -24,11 +26,22 @@ class Provider extends ServiceProvider
 
 	public function boot()
 	{
-		$this->app->bind(NameFormer::class, function () {
+		$this->app->singleton(NameFormer::class, function () {
 			return new SimpleNameFormer();
 		});
 
-		$this->bootWithRouter($this->app[Router::class]);
+		$this->app->singleton(SNS::class, function ($app, $config) {
+			return new SNS();
+		});
+
+		/** @var BroadcastManager $broadcastManager */
+		$broadcastManager = $this->app[Factory::class];
+
+		$broadcastManager->extend('sns', function ($app, $config) {
+			return new SnsBroadcaster($app[SNS::class]);
+		});
+
+		//		$this->bootWithRouter($this->app[Router::class]);
 	}
 
 	/**
