@@ -56,7 +56,7 @@ class Account
 
 		$assumeRoleResponse = $stsClient->assumeRole([
 			'RoleArn'         => $role,
-			'RoleSessionName' => 'AssumeSNSRole' . now()->timestamp,
+			'RoleSessionName' => 'AssumeSNSRole' . (new \DateTime())->getTimestamp(),
 		]);
 
 		$credentials = $assumeRoleResponse->get('Credentials');
