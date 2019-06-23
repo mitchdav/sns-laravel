@@ -33,6 +33,10 @@ class SnsBroadcaster implements Broadcaster
 	 */
 	public function broadcast(array $channels, $event, array $payload = [])
 	{
+		if (array_key_exists('socket', $payload) && $payload['socket'] === NULL) {
+			unset($payload['socket']);
+		}
+
 		foreach ($channels as $channel) {
 			if (is_string($channel)) {
 				if (($delimiterPosition = strpos($channel, '.')) !== FALSE) {

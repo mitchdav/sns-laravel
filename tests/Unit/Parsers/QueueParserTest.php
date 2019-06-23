@@ -71,7 +71,7 @@ class QueueTest extends TestCase
 	/** @test */
 	public function throws_exception_for_missing_account()
 	{
-		$this->expectExceptionMessage('account');
+		$this->customExpectExceptionMessage('account');
 
 		$accounts = collect([
 			new Account('account-1', 123456789, 'arn:aws:iam::123456789:role/role-1'),
@@ -87,7 +87,7 @@ class QueueTest extends TestCase
 	/** @test */
 	public function throws_exception_for_missing_region()
 	{
-		$this->expectExceptionMessage('region');
+		$this->customExpectExceptionMessage('region');
 
 		$accounts = collect([
 			new Account('account-1', 123456789, 'arn:aws:iam::123456789:role/role-1'),
@@ -103,7 +103,7 @@ class QueueTest extends TestCase
 	/** @test */
 	public function throws_exception_for_missing_name_former()
 	{
-		$this->expectExceptionMessage('former');
+		$this->customExpectExceptionMessage('former');
 
 		$accounts = collect([
 			new Account('account-1', 123456789, 'arn:aws:iam::123456789:role/role-1'),

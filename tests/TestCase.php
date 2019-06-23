@@ -9,11 +9,25 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+	/**
+	 * Required to support Laravel 5.3 and PHPUnit 5.0 which doesn't support expectExceptionMessage()
+	 *
+	 * @param string $message
+	 */
+	public function customExpectExceptionMessage($message)
+	{
+		if (is_callable('parent::expectExceptionMessage')) {
+			return parent::expectExceptionMessage($message);
+		} else {
+			return $this->setExpectedException(\Exception::class, $message);
+		}
+	}
+
 	protected function getPackageProviders($app)
 	{
 		return [
-			Provider::class,
 			AwsServiceProvider::class,
+			Provider::class,
 		];
 	}
 

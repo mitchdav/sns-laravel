@@ -79,7 +79,7 @@ class AccountParserTest extends TestCase
 	/** @test */
 	public function throws_exception_for_missing_id()
 	{
-		$this->expectExceptionMessage('account id');
+		$this->customExpectExceptionMessage('account id');
 
 		ConfigParser::parse([
 			'accounts' => [
@@ -93,8 +93,8 @@ class AccountParserTest extends TestCase
 	/** @test */
 	public function throws_exception_for_non_numeric_id()
 	{
-		$this->expectExceptionMessage('account id');
-		$this->expectExceptionMessage('numeric');
+		$this->customExpectExceptionMessage('account id');
+		$this->customExpectExceptionMessage('numeric');
 
 		ConfigParser::parse([
 			'accounts' => [
@@ -108,8 +108,8 @@ class AccountParserTest extends TestCase
 	/** @test */
 	public function throws_exception_for_non_string_role()
 	{
-		$this->expectExceptionMessage('account role');
-		$this->expectExceptionMessage('string');
+		$this->customExpectExceptionMessage('account role');
+		$this->customExpectExceptionMessage('string');
 
 		ConfigParser::parse([
 			'accounts' => [
@@ -124,8 +124,8 @@ class AccountParserTest extends TestCase
 	/** @test */
 	public function throws_exception_for_non_matching_role()
 	{
-		$this->expectExceptionMessage('account role');
-		$this->expectExceptionMessage('start with');
+		$this->customExpectExceptionMessage('account role');
+		$this->customExpectExceptionMessage('start with');
 
 		ConfigParser::parse([
 			'accounts' => [
