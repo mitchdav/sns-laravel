@@ -6,29 +6,19 @@ use Illuminate\Support\Collection;
 
 class Service
 {
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	private $label;
 
-	/**
-	 * @var Collection $topics
-	 */
+	/** @var \Illuminate\Support\Collection */
 	private $topics;
 
-	/**
-	 * @var Collection $queues
-	 */
+	/** @var \Illuminate\Support\Collection */
 	private $queues;
 
-	/**
-	 * @var Collection $endpoints
-	 */
+	/** @var \Illuminate\Support\Collection */
 	private $endpoints;
 
-	/**
-	 * @var Collection $subscriptions
-	 */
+	/** @var \Illuminate\Support\Collection */
 	private $subscriptions;
 
 	/**

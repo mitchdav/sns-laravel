@@ -55,9 +55,9 @@ matrix:
 
 before_script:
   - travis_retry composer self-update
-  - chmod +x tests/*.sh
+  - chmod +x tests/scripts/*.sh
 
 script:
-  - ./tests/laravel-${LARAVEL}.sh
+  - ./tests/scripts/laravel-${LARAVEL}.sh
   - cp phpunit.xml.dist phpunit.xml
   - php vendor/bin/phpunit

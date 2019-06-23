@@ -2,6 +2,9 @@
 
 namespace Mitchdav\SNS\Models;
 
+use Illuminate\Support\Arr;
+use Mitchdav\SNS\Contracts\NameFormer;
+
 class Topic
 {
 	/**
@@ -45,6 +48,66 @@ class Topic
 		$this->region  = $region;
 
 		$this->arn = $this->generateArn();
+	}
+
+	public static function parseTopics($accounts, $defaults, $service, $config)
+	{
+		$topics = [];
+
+		foreach ($config as $label => $attributes) {
+			if (is_string($attributes)) {
+				// Topic config just has the topic label
+
+				$label      = $attributes;
+				$attributes = [];
+			}
+
+			$topics[] = self::parse($accounts, $defaults, $service, $label, $attributes);
+		}
+
+		return $topics;
+	}
+
+	public static function parse($accounts, $defaults, $service, $label, $attributes)
+	{
+		$defaults = array_replace_recursive(Arr::get($defaults, 'all', []), Arr::get($defaults, 'topic', []));
+
+		$mergedAttributes = array_replace_recursive($defaults, $attributes);
+
+		if (!isset($mergedAttributes['account'])) {
+			throw new \Exception('You must provide the account for the "' . $label . '" topic.');
+		}
+
+		if (!isset($mergedAttributes['region'])) {
+			throw new \Exception('You must provide the region for the "' . $label . '" topic.');
+		}
+
+		if (!isset($mergedAttributes['nameFormer'])) {
+			throw new \Exception('You must provide the name former for the "' . $label . '" topic.');
+		}
+
+		$accountName = $mergedAttributes['account'];
+		$region      = $mergedAttributes['region'];
+		$nameFormer  = app($mergedAttributes['nameFormer']);
+
+		if (!$nameFormer instanceof NameFormer) {
+			throw new \Exception('The name former for the "' . $label . '" topic must implement ' . NameFormer::class . '.');
+		}
+
+		/** @var Account $account */
+		$account = $accounts->first(function ($account) use ($accountName) {
+			/** @var Account $account */
+
+			return $account->getLabel() === $accountName;
+		});
+
+		if (!isset($account)) {
+			throw new \Exception('The account "' . $accountName . '" was not found for the "' . $label . '" topic.');
+		}
+
+		$name = $nameFormer->formName($service, $label, $mergedAttributes);
+
+		return new Topic($label, $name, $account, $region);
 	}
 
 	public function create()

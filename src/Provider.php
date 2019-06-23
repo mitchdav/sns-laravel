@@ -2,16 +2,14 @@
 
 namespace Mitchdav\SNS;
 
-use Aws\Sns\SnsClient;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Contracts\Broadcasting\Factory;
-use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Mitchdav\SNS\Commands\Create;
 use Mitchdav\SNS\Commands\Delete;
 use Mitchdav\SNS\Commands\Subscribe;
 use Mitchdav\SNS\Commands\Unsubscribe;
-use Mitchdav\SNS\Contracts\NameFormer;
+use Mitchdav\SNS\Parsers\ConfigParser;
 
 /**
  * Class Provider
@@ -26,12 +24,8 @@ class Provider extends ServiceProvider
 
 	public function boot()
 	{
-		$this->app->singleton(NameFormer::class, function () {
-			return new SimpleNameFormer();
-		});
-
 		$this->app->singleton(SNS::class, function ($app, $config) {
-			return new SNS();
+			return new SNS(ConfigParser::parse(config('sns')), app(BroadcastManager::class));
 		});
 
 		/** @var BroadcastManager $broadcastManager */

@@ -2,9 +2,6 @@
 
 namespace Mitchdav\SNS\Models\SubscriptionMethods;
 
-use Aws\Exception\AwsException;
-use Aws\Sqs\SqsClient;
-use Illuminate\Foundation\Testing\Assert as PHPUnit;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Mitchdav\SNS\Contracts\SubscriptionMethod;
@@ -17,7 +14,7 @@ class SQS implements SubscriptionMethod
 
 	public function subscribe(Topic $topic, $subscriber)
 	{
-		/** @var \Mitchdav\SNS\Models\Queue $queue */
+		/** @var Queue $queue */
 		$queue = $subscriber;
 
 		$snsClient = $topic->snsClient();
@@ -99,10 +96,9 @@ class SQS implements SubscriptionMethod
 		}
 
 		$snsClient->subscribe([
-			'Protocol'              => self::PROTOCOL,
-			'Endpoint'              => $queue->getArn(),
-			'ReturnSubscriptionArn' => TRUE,
-			'TopicArn'              => $topic->getArn(),
+			'Protocol' => self::PROTOCOL,
+			'Endpoint' => $queue->getArn(),
+			'TopicArn' => $topic->getArn(),
 		]);
 
 		$subscriptionArn = $this->getSubscriptionArn($topic, $queue);
@@ -165,8 +161,6 @@ class SQS implements SubscriptionMethod
 			$candidates = $policy['Statement'];
 			$statements = [];
 
-			//			dump($candidates);
-
 			$foundInPolicy = FALSE;
 
 			foreach ($candidates as $candidate) {
@@ -181,8 +175,6 @@ class SQS implements SubscriptionMethod
 
 			if ($foundInPolicy) {
 				$policy['Statement'] = $statements;
-
-				//				dump($policy);
 
 				$sqsClient->setQueueAttributes([
 					'QueueUrl'   => $queue->getUrl(),

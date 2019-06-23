@@ -2,7 +2,8 @@
 
 namespace Mitchdav\SNS\Models;
 
-use Aws\Sqs\Exception\SqsException;
+use Illuminate\Support\Arr;
+use Mitchdav\SNS\Contracts\NameFormer;
 use Mitchdav\SNS\SNS;
 
 class Queue
@@ -10,7 +11,7 @@ class Queue
 	/**
 	 * @var string
 	 */
-	public $label;
+	private $label;
 
 	/**
 	 * @var string
@@ -38,63 +39,90 @@ class Queue
 	private $url;
 
 	/**
-	 * @var array
-	 */
-	private $attributes;
-
-	/**
 	 * Queue constructor.
 	 *
 	 * @param string                       $label
 	 * @param string                       $name
 	 * @param \Mitchdav\SNS\Models\Account $account
 	 * @param string                       $region
-	 * @param array                        $attributes
 	 */
-	public function __construct($label, $name, Account $account, $region, $attributes)
+	public function __construct($label, $name, Account $account, $region)
 	{
-		$this->label      = $label;
-		$this->name       = $name;
-		$this->account    = $account;
-		$this->region     = $region;
-		$this->attributes = $attributes;
+		$this->label   = $label;
+		$this->name    = $name;
+		$this->account = $account;
+		$this->region  = $region;
 
 		$this->arn = $this->generateArn();
 		$this->url = $this->generateUrl();
 	}
 
+	public static function parseQueues($accounts, $defaults, $service, $config)
+	{
+		$queues = [];
+
+		foreach ($config as $label => $attributes) {
+			if (is_string($attributes)) {
+				// Queue config just has the queue label
+
+				$label      = $attributes;
+				$attributes = [];
+			}
+
+			$queues[] = self::parse($accounts, $defaults, $service, $label, $attributes);
+		}
+
+		return $queues;
+	}
+
+	public static function parse($accounts, $defaults, $service, $label, $attributes)
+	{
+		$defaults = array_replace_recursive(Arr::get($defaults, 'all', []), Arr::get($defaults, 'queue', []));
+
+		$mergedAttributes = array_replace_recursive($defaults, $attributes);
+
+		if (!isset($mergedAttributes['account'])) {
+			throw new \Exception('You must provide the account for the "' . $label . '" queue.');
+		}
+
+		if (!isset($mergedAttributes['region'])) {
+			throw new \Exception('You must provide the region for the "' . $label . '" queue.');
+		}
+
+		if (!isset($mergedAttributes['nameFormer'])) {
+			throw new \Exception('You must provide the name former for the "' . $label . '" queue.');
+		}
+
+		$accountName = $mergedAttributes['account'];
+		$region      = $mergedAttributes['region'];
+		$nameFormer  = app($mergedAttributes['nameFormer']);
+
+		if (!$nameFormer instanceof NameFormer) {
+			throw new \Exception('The name former for the "' . $label . '" queue must implement ' . NameFormer::class . '.');
+		}
+
+		/** @var Account $account */
+		$account = $accounts->first(function ($account) use ($accountName) {
+			/** @var Account $account */
+
+			return $account->getLabel() === $accountName;
+		});
+
+		if (!isset($account)) {
+			throw new \Exception('The account "' . $accountName . '" was not found for the "' . $label . '" queue.');
+		}
+
+		$name = $nameFormer->formName($service, $label, $mergedAttributes);
+
+		return new Queue($label, $name, $account, $region);
+	}
+
 	public function create()
 	{
-		try {
-			$this->sqsClient()
-			     ->createQueue([
-				     'QueueName'  => $this->name,
-				     'Attributes' => $this->attributes,
-			     ]);
-		} catch (SqsException $exception) {
-			if ($exception->getAwsErrorType() === 'QueueAlreadyExists') {
-				// https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html#API_CreateQueue_Errors
-				// The queue already exists, and the attributes differ from those of the existing queue
-
-				$result = $this->sqsClient()
-				               ->getQueueAttributes([
-					               'QueueUrl'       => $this->url,
-					               'AttributeNames' => [
-						               'All',
-					               ],
-				               ]);
-
-				$attributes = array_merge_recursive($result->get('Attributes'), $this->attributes);
-
-				$this->sqsClient()
-				     ->setQueueAttributes([
-					     'QueueUrl'  => $this->url,
-					     'Attribute' => $attributes,
-				     ]);
-			} else {
-				throw $exception;
-			}
-		}
+		$this->sqsClient()
+		     ->createQueue([
+			     'QueueName' => $this->name,
+		     ]);
 	}
 
 	public function delete()
@@ -173,14 +201,6 @@ class Queue
 	public function getUrl()
 	{
 		return $this->url;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getAttributes()
-	{
-		return $this->attributes;
 	}
 
 	/**

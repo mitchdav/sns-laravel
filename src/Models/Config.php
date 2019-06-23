@@ -44,6 +44,20 @@ class Config
 	}
 
 	/**
+	 * @param string $account
+	 *
+	 * @return Account|null
+	 */
+	public function getAccount($account)
+	{
+		return $this->accounts->first(function ($candidate) use ($account) {
+			/** @var Account $candidate */
+
+			return $candidate->getLabel() === $account;
+		});
+	}
+
+	/**
 	 * @return \Illuminate\Support\Collection
 	 */
 	public function getServices()

@@ -1,6 +1,6 @@
 <?php
 
-use Mitchdav\SNS\SimpleNameFormer;
+use Mitchdav\SNS\ServiceBasedNameFormer;
 
 return [
 
@@ -20,16 +20,13 @@ return [
 		'all' => [
 			'account' => 'account-1',
 			'region'  => env('ACCOUNT_1_REGION'),
+			'prefix'  => ServiceBasedNameFormer::PREFIX_SERVICE_NAME,
+			'joiner'  => '_',
 		],
 
-		'topic' => [
-			'prefix' => SimpleNameFormer::PREFIX_SERVICE_NAME,
-			'joiner' => '_',
-		],
+		'topic' => [],
 
 		'queue' => [
-			'prefix'     => SimpleNameFormer::PREFIX_SERVICE_NAME,
-			'joiner'     => '_',
 			'attributes' => [
 				'MessageRetentionPeriod' => 14 * 24 * 60 * 60,
 				'VisibilityTimeout'      => 2 * 60,

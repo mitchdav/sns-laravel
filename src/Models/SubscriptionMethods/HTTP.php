@@ -7,7 +7,7 @@ use Mitchdav\SNS\Models\Topic;
 
 class HTTP implements SubscriptionMethod
 {
-	const METHOD = 'http';
+	const PROTOCOL = 'http';
 
 	public function subscribe(Topic $topic, $subscriber)
 	{

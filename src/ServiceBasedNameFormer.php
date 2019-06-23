@@ -4,7 +4,7 @@ namespace Mitchdav\SNS;
 
 use Mitchdav\SNS\Contracts\NameFormer;
 
-class SimpleNameFormer implements NameFormer
+class ServiceBasedNameFormer implements NameFormer
 {
 	const PREFIX_SERVICE_NAME = '$SERVICE_NAME$';
 
@@ -28,9 +28,7 @@ class SimpleNameFormer implements NameFormer
 			$prefix = $config['prefix'];
 			$joiner = $config['joiner'];
 
-			if ($prefix === self::PREFIX_SERVICE_NAME) {
-				$prefix = $service;
-			}
+			$prefix = str_replace(self::PREFIX_SERVICE_NAME, $service, $prefix);
 
 			$name = $prefix . $joiner . $name;
 		}

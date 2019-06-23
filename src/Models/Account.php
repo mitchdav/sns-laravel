@@ -3,29 +3,22 @@
 namespace Mitchdav\SNS\Models;
 
 use Aws\Sdk;
-use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 
 class Account
 {
-	/**
-	 * @var string
-	 */
-	public $label;
+	/** @var string */
+	private $label;
 
-	/**
-	 * @var int
-	 */
+	/** @var int */
 	private $id;
 
-	/**
-	 * @var string|NULL
-	 */
+	/** @var NULL|string */
 	private $role;
 
-	/**
-	 * @var Sdk
-	 */
+	/** @var Sdk */
 	private $sdk;
 
 	/**
@@ -42,6 +35,48 @@ class Account
 		$this->role  = $role;
 
 		$this->sdk = NULL;
+	}
+
+	public static function parseAccounts($config)
+	{
+		$accounts = [];
+
+		foreach ($config as $label => $attributes) {
+			$accounts[] = self::parse($label, $attributes);
+		}
+
+		return $accounts;
+	}
+
+	public static function parse($label, $attributes)
+	{
+		if (!isset($attributes['id'])) {
+			throw new \Exception('You must provide the account id using the "id" key for account "' . $label . '".');
+		}
+
+		$id = $attributes['id'];
+
+		if (!is_numeric($id)) {
+			throw new \Exception('The account id for account "' . $label . '" must be numeric.');
+		}
+
+		$role = Arr::get($attributes, 'role', NULL);
+
+		if ($role !== NULL) {
+			if (!is_string($role)) {
+				throw new \Exception('The account role for account "' . $label . '" must be a string.');
+			}
+
+			if (Str::startsWith($role, 'arn:aws:iam::')) {
+				if (!Str::startsWith($role, 'arn:aws:iam::' . $id . ':role/')) {
+					throw new \Exception('The account role for account "' . $label . '" must start with "arn:aws:iam::' . $id . ':role/" (check that you have the correct account id).');
+				}
+			} else {
+				$role = 'arn:aws:iam::' . $id . ':role/' . $role;
+			}
+		}
+
+		return new Account($label, $id, $role);
 	}
 
 	/**

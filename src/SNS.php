@@ -4,28 +4,32 @@ namespace Mitchdav\SNS;
 
 use Illuminate\Broadcasting\BroadcastManager;
 use Mitchdav\SNS\Contracts\SubscriptionMethod;
+use Mitchdav\SNS\Models\Config;
 use Mitchdav\SNS\Models\SubscriptionMethods\HTTP;
 use Mitchdav\SNS\Models\SubscriptionMethods\HTTPS;
 use Mitchdav\SNS\Models\SubscriptionMethods\SQS;
 
 class SNS
 {
-	const ACCOUNT_DEFAULT    = 'default';
-	const ARN_FORMER_DEFAULT = '$DEFAULT$';
-
 	/**
 	 * @var \Mitchdav\SNS\Models\Config
 	 */
 	private $config;
 
-	public function __construct($configFileName = 'sns')
+	/**
+	 * @var \Illuminate\Broadcasting\BroadcastManager
+	 */
+	private $broadcastManager;
+
+	public function __construct(Config $config, BroadcastManager $broadcastManager)
 	{
-		$this->config = ConfigParser::parse(config($configFileName));
+		$this->config           = $config;
+		$this->broadcastManager = $broadcastManager;
 
 		$this->drivers = [];
 
-		$this->extend(HTTP::METHOD, $this->createHttpDriver($this->config));
-		$this->extend(HTTPS::METHOD, $this->createHttpsDriver($this->config));
+		$this->extend(HTTP::PROTOCOL, $this->createHttpDriver($this->config));
+		$this->extend(HTTPS::PROTOCOL, $this->createHttpsDriver($this->config));
 		$this->extend(SQS::PROTOCOL, $this->createSqsDriver($this->config));
 	}
 
@@ -39,16 +43,13 @@ class SNS
 
 	public function publish($notification)
 	{
-		/** @var BroadcastManager $broadcastManager */
-		$broadcastManager = app(BroadcastManager::class);
+		$defaultDriver = $this->broadcastManager->getDefaultDriver();
 
-		$defaultDriver = $broadcastManager->getDefaultDriver();
-
-		$broadcastManager->setDefaultDriver('sns');
+		$this->broadcastManager->setDefaultDriver('sns');
 
 		event($notification);
 
-		$broadcastManager->setDefaultDriver($defaultDriver);
+		$this->broadcastManager->setDefaultDriver($defaultDriver);
 	}
 
 	public function extend($protocol, SubscriptionMethod $driver)

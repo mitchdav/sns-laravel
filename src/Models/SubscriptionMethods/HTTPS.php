@@ -7,7 +7,7 @@ use Mitchdav\SNS\Models\Topic;
 
 class HTTPS implements SubscriptionMethod
 {
-	const METHOD = 'https';
+	const PROTOCOL = 'https';
 
 	public function subscribe(Topic $topic, $subscriber)
 	{
