@@ -12,9 +12,9 @@ class BroadcastTest extends TestCase
 	/** @test */
 	public function can_broadcast_to_topic()
 	{
-		$this->markTestSkipped();
-
-		return;
+//		$this->markTestSkipped();
+//
+//		return;
 
 		/** @var \Mitchdav\SNS\Models\Topic $topic1 */
 		$topic1 = SNS::getTopic('orders', 'order-shipped');
